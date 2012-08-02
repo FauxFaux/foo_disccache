@@ -12,8 +12,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="play_callback_changes.cpp" />
+    <ClCompile Include="queuecontents_queue_callback.cpp" />
+    <ClCompile Include="refresh.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="refresh.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
