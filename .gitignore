@@ -1,0 +1,9 @@
+*.opensdf
+*.sdf
+*.suo
+*.vcxproj.user
+Debug
+Release
+foobar2000
+ipch
+package
