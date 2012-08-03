@@ -4,6 +4,7 @@
 static const int MAX_ITEMS = 50;
 static const DWORD MEGABYTES = 1024 * 1024;
 static const DWORD MAX_BYTES = 200 * MEGABYTES;
+static const DWORD FREQUENCY_SECONDS = 60;
 
 // "Default" {BFC61179-49AD-4E95-8D60-A22706485505}
 static GUID const ORDER_DEFAULT=
@@ -181,13 +182,19 @@ void global_refresh_callback::process_paths() {
 void global_refresh_callback::callback_run() {
 	if (!TryEnterCriticalSection(&list_cs))
 		return;
-	paths.remove_all();
-	add_playlist_related_tracks(paths);
-	SetEvent(work_to_do_event);
+	const DWORD now = GetTickCount();
+	const DWORD diff = now - last_run;
+	if (diff > FREQUENCY_SECONDS * 1000) {
+		paths.remove_all();
+		add_playlist_related_tracks(paths);
+		SetEvent(work_to_do_event);
+		last_run = now;
+	}
 	LeaveCriticalSection(&list_cs);
 }
 
 global_refresh_callback::global_refresh_callback() {
+	last_run = 0;
 	thread_done = false;
 	InitializeCriticalSection(&list_cs);
 	work_to_do_event = CreateEvent(NULL, FALSE, FALSE, NULL);

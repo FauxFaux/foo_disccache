@@ -8,6 +8,7 @@ class global_refresh_callback : public main_thread_callback
 {
 	HANDLE thread;
 	pfc::list_t<pfc::string8> paths;
+	DWORD last_run;
 public:
 	CRITICAL_SECTION list_cs;
 	HANDLE work_to_do_event;
