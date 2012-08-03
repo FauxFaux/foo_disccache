@@ -87,9 +87,11 @@ static void add_playlist_related_tracks(pfc::list_t<pfc::string8> &paths) {
 		return;
 
 	if (ORDER_SHUFFLE_DIRECTORIES == playback_order) {
+#if 0
 		pfc::string8 curr = curr_track->get_path();
 		curr.truncate(curr.find_last('\\'));
 		paths.add_item(curr);
+#endif
 		return;
 	}
 
@@ -164,6 +166,10 @@ static DWORD read_whole_if_on(const pfc::string8 &path) {
 	return 0;
 }
 
+/** always read the first and next file,
+  * then read the remaining (up to MAX_BYTES)
+  * if the devices are on 
+  */
 void global_refresh_callback::process_paths() {
 	DWORD total = 0;
 	const DWORD count = paths.get_count();
