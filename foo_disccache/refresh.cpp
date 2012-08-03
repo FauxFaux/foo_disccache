@@ -111,8 +111,8 @@ static void add_playlist_related_tracks(pfc::list_t<pfc::string8> &paths) {
 
 DWORD WINAPI do_readfiles(void *dat) {
 	global_refresh_callback *us = static_cast<global_refresh_callback*>(dat);
-	WaitForSingleObject(us->work_to_do_event, INFINITE);
 	while (true) {
+		WaitForSingleObject(us->work_to_do_event, INFINITE);
 		EnterCriticalSection(&us->list_cs);
 
 		if (us->thread_done)
@@ -124,15 +124,22 @@ DWORD WINAPI do_readfiles(void *dat) {
 	}
 }
 
-static DWORD read_whole(const char *path) {
-	HANDLE h = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, 0, 0, NULL);
+pfc::string8 drop_prefix(pfc::string8 path) {
+	path.remove_chars(0, strlen("file://"));
+	return path;
+}
+
+static DWORD read_whole(const pfc::string8 &url) {
+	pfc::string8 path = drop_prefix(url);
+	HANDLE h = CreateFileA(path.toString(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+	DWORD e = GetLastError();
 	if (INVALID_HANDLE_VALUE == h)
 		return 0;
 	const size_t buf_size = 32 * 1024;
 	char buf[buf_size];
 	DWORD read;
 	DWORD total = 0;
-	while (ReadFile(h, &buf, buf_size, &read, NULL))
+	while (ReadFile(h, &buf, buf_size, &read, NULL) && read)
 		total += read;
 
 	CloseHandle(h);
@@ -142,7 +149,7 @@ static DWORD read_whole(const char *path) {
 
 static DWORD read_whole_if_on(const pfc::string8 &path) {
 	pfc::string8 a("\\\\.\\");
-	a += path;
+	a += drop_prefix(path);
 	HANDLE h = CreateFileA(a, 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, 0, NULL);
 	if (INVALID_HANDLE_VALUE == h)
 		return 0;
@@ -158,15 +165,13 @@ static DWORD read_whole_if_on(const pfc::string8 &path) {
 
 void global_refresh_callback::process_paths() {
 	DWORD total = 0;
-	switch (paths.get_count()) {
-	case 0:
+	const DWORD count = paths.get_count();
+	if (0 == count)
 		return;
-	case 2:
+
+	total += read_whole(paths[0]);
+	if (count > 1)
 		total += read_whole(paths[1]);
-	case 1:
-		total += read_whole(paths[0]);
-		return;
-	}
 
 	for (t_size i = 2; i < paths.get_count() && total < MAX_BYTES; ++i) {
 		total += read_whole_if_on(paths[i]);
@@ -176,6 +181,7 @@ void global_refresh_callback::process_paths() {
 void global_refresh_callback::callback_run() {
 	if (!TryEnterCriticalSection(&list_cs))
 		return;
+	paths.remove_all();
 	add_playlist_related_tracks(paths);
 	SetEvent(work_to_do_event);
 	LeaveCriticalSection(&list_cs);
@@ -191,6 +197,5 @@ global_refresh_callback::global_refresh_callback() {
 service_impl_t<global_refresh_callback> g_refresh_callback;
 
 void do_refresh() {
-	static_api_ptr_t<main_thread_callback_manager>()->add_callback(&g_refresh_callback);
+	g_refresh_callback.callback_run();
 }
-
