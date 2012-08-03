@@ -68,7 +68,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>..\foobar-sdk\foobar2000\shared\shared.lib;..\foobar-sdk\foobar2000\SDK\$(Configuration)\foobar2000_sdk.lib;..\foobar-sdk\foobar2000\foobar2000_component_client\$(Configuration)\foobar2000_component_client.lib;..\$(Configuration)\pfc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\foobar-sdk\foobar2000\shared\shared.lib;..\foobar-sdk\foobar2000\SDK\$(Configuration)\foobar2000_sdk.lib;..\foobar-sdk\foobar2000\foobar2000_component_client\$(Configuration)\foobar2000_component_client.lib;..\$(Configuration)\pfc.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -85,7 +85,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>..\foobar-sdk\foobar2000\shared\shared.lib;..\foobar-sdk\foobar2000\SDK\$(Configuration)\foobar2000_sdk.lib;..\foobar-sdk\foobar2000\foobar2000_component_client\$(Configuration)\foobar2000_component_client.lib;..\$(Configuration)\pfc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\foobar-sdk\foobar2000\shared\shared.lib;..\foobar-sdk\foobar2000\SDK\$(Configuration)\foobar2000_sdk.lib;..\foobar-sdk\foobar2000\foobar2000_component_client\$(Configuration)\foobar2000_component_client.lib;..\$(Configuration)\pfc.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
