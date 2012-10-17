@@ -189,6 +189,10 @@ void global_refresh_callback::callback_run() {
 	if (!TryEnterCriticalSection(&list_cs))
 		return;
 	const DWORD now = GetTickCount();
+
+	if (now < last_run)
+		last_run = now;
+
 	const DWORD diff = now - last_run;
 	if (diff > FREQUENCY_SECONDS * 1000) {
 		paths.remove_all();
