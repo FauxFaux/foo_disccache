@@ -5,6 +5,8 @@ static const int MAX_ITEMS = 50;
 static const DWORD MEGABYTES = 1024 * 1024;
 static const DWORD MAX_BYTES = 200 * MEGABYTES;
 static const DWORD FREQUENCY_SECONDS = 60;
+static const DWORD SPINDOWN_ALLOWANCE_MINUTES = 20;
+
 
 // "Default" {BFC61179-49AD-4E95-8D60-A22706485505}
 static GUID const ORDER_DEFAULT=
@@ -180,7 +182,36 @@ void global_refresh_callback::process_paths() {
 	if (count > 1)
 		total += read_whole(paths[1]);
 
-	for (t_size i = 2; i < paths.get_count() && total < MAX_BYTES; ++i) {
+	/**
+
+	Give the disc a chance to spin down.
+
+	For any SPINDOWN_ALLOWANCE period, we'll read less and less as the period goes on.
+	i.e. in the first minute, we'll read as far ahead as we think we might want to,
+	but then never plan to read that far ahead again until the period has elapsed.
+
+	Diagram in my head, minutes going down, * is some amount of data, - is data we've played
+	so don't care about anymore (i.e. trails of -- are playback):
+
+	******************
+	-***************
+	--************
+	---*********
+	----******************
+	-----***************    
+	------************
+
+	etc.
+
+	This is just a (really) poor man's way of attempting to read a specific window repeatedly,
+	without having to keep track of what's going on (which'd be meaningless anyway, as we don't
+	even try to look at what the disc is doing).
+	*/
+	const DWORD spindown_allowance_ms = SPINDOWN_ALLOWANCE_MINUTES * 60 * 1000;
+	const DWORD target_bytes =
+		(DWORD) (MAX_BYTES * (1 - (GetTickCount() % spindown_allowance_ms) / 2.f / spindown_allowance_ms));
+
+	for (t_size i = 2; i < paths.get_count() && total < target_bytes; ++i) {
 		total += read_whole_if_on(paths[i]);
 	}
 }
