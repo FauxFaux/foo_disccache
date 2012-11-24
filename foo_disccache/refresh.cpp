@@ -136,7 +136,8 @@ pfc::string8 drop_prefix(pfc::string8 path) {
 
 static DWORD read_whole(const pfc::string8 &url) {
 	pfc::string8 path = drop_prefix(url);
-	HANDLE h = CreateFileA(path.toString(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+	pfc::stringcvt::string_os_from_utf8 temp(path);
+	HANDLE h = CreateFile(temp, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
 	DWORD e = GetLastError();
 	if (INVALID_HANDLE_VALUE == h)
 		return 0;
@@ -155,7 +156,8 @@ static DWORD read_whole(const pfc::string8 &url) {
 static DWORD read_whole_if_on(const pfc::string8 &path) {
 	pfc::string8 a("\\\\.\\");
 	a += drop_prefix(path);
-	HANDLE h = CreateFileA(a, 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, 0, NULL);
+	pfc::stringcvt::string_os_from_utf8 temp(a);
+	HANDLE h = CreateFile(temp, 0, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, 0, NULL);
 	if (INVALID_HANDLE_VALUE == h)
 		return 0;
 
